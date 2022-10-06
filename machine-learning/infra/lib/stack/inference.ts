@@ -54,11 +54,23 @@ export class InferenceStack extends cdk.Stack {
   }
 
   private createInferenceLambda(): lambda.Function {
-    return new lambda.Function(this, "InferenceLambda", {
+    const inferenceLambda = new lambda.Function(this, "InferenceLambda", {
       code: lambda.Code.fromAsset(path.join(__dirname, "..", "lambda")),
       handler: "inference.handler",
       runtime: lambda.Runtime.PYTHON_3_9,
+      timeout: cdk.Duration.seconds(30),
     });
+
+    // FIXME: this is obviously not good, I'm just so fucking tired of this IAM bullshit
+    inferenceLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: ["*"],
+        actions: ["*"],
+      })
+    );
+
+    return inferenceLambda;
   }
 
   private createTransformLambda(): lambda.Function {
