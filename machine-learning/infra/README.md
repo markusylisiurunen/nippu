@@ -1,14 +1,45 @@
-# Welcome to your CDK TypeScript project
+# Setup
 
-This is a blank project for CDK development with TypeScript.
+To develop the Lambda functions, do the following:
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+```sh
+cd lib/lambda
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+```
 
-## Useful commands
+If you want to install a new Python dependency, do the following:
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+```sh
+cd lib/lambda
+source .venv/bin/activate
+python3 -m pip install "<name of the dependency>"
+python3 -m pip freeze > requirements.txt
+```
+
+Before deploying the CDK stacks, do the following:
+
+```sh
+cd lib/lambda
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt -t ./package
+```
+
+To deploy, do the following:
+
+```sh
+export AWS_PROFILE=NippuDevelopment
+cdk diff
+cdk deploy
+```
+
+To test the deployed pipeline, do the following:
+
+```sh
+mkdir .data
+# add a test image of a receipt to the `.data` folder
+curl -s -X POST 'https://wmddtweiy2.execute-api.eu-central-1.amazonaws.com/prod' \
+  -H 'Content-Type: application/json' \
+  -d '{"base64_image":"'$(base64 -i .data/example.jpeg)'"}'
+```
