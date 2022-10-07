@@ -17,25 +17,14 @@ def handler(event, context):
     print('request: {}'.format(json.dumps(event)))
 
     # TODO: take the image and word blocks and properly pass them through SageMaker
-    as_text = ' '.join(list(
-        map(lambda block: block['Text'], event['ocr']['blocks'])
-    ))
-
-    questions = [
-        "What is the vendor's name?",
-        "What is the vendor's address?",
-        "What is the date of purchase?",
-        "How much was the total amount?",
-    ]
-
     response = client.invoke_endpoint(
-        EndpointName='huggingface-pytorch-inference-2022-10-06-15-01-07-015',
+        EndpointName='lolbalmodel',
         Body=json.dumps(
             {
-                'inputs': list(
-                    map(lambda q: {'context': as_text,
-                        'question': q}, questions)
-                )
+                'inputs': {
+                    'base64_image': event['image']['base64_image'],
+                    'blocks': event['ocr']['blocks'],
+                }
             }
         ),
         ContentType='application/json',
@@ -45,20 +34,10 @@ def handler(event, context):
 
     print('sagemaker response: {}'.format(json.dumps(response)))
 
-    vendor_name = response[0]['answer']
-    vendor_address = response[1]['answer']
-    date_of_purchase = response[2]['answer']
-    total_amount = response[3]['answer']
-
     result = {
         'statusCode': 200,
         'headers': {'Content-Type': 'application/json'},
-        'body': {
-            'vendor_name': [{'value': vendor_name}],
-            'vendor_address': [{'value': vendor_address}],
-            'date_of_purchase': [{'value': date_of_purchase}],
-            'total_amount': [{'value': total_amount}],
-        }
+        'body': response
     }
 
     print('result: {}'.format(json.dumps(result)))
